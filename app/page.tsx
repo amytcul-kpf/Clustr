@@ -41,8 +41,13 @@ export default function Home() {
       });
 
       if (!extractRes.ok) {
-        const err = await extractRes.json();
-        throw new Error(err.error || "PDF extraction failed");
+        const text = await extractRes.text();
+        try {
+          const err = JSON.parse(text);
+          throw new Error(err.error || "PDF extraction failed");
+        } catch {
+          throw new Error(`PDF extraction failed (status ${extractRes.status})`);
+        }
       }
 
       const { documents } = (await extractRes.json()) as {
@@ -59,8 +64,13 @@ export default function Home() {
       });
 
       if (!synthRes.ok) {
-        const err = await synthRes.json();
-        throw new Error(err.error || "Synthesis failed");
+        const text = await synthRes.text();
+        try {
+          const err = JSON.parse(text);
+          throw new Error(err.error || "Synthesis failed");
+        } catch {
+          throw new Error(`Synthesis failed (status ${synthRes.status})`);
+        }
       }
 
       const result = (await synthRes.json()) as SynthesisResult;
