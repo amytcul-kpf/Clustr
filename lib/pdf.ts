@@ -1,12 +1,13 @@
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsLib from "pdfjs-dist";
 
-// Disable worker in serverless environment
-GlobalWorkerOptions.workerSrc = "";
+// Point to the worker from CDN for browser usage
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
-export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  const data = new Uint8Array(buffer);
-  const doc = await getDocument({ data, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true }).promise;
+export async function extractTextFromPdf(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const data = new Uint8Array(arrayBuffer);
 
+  const doc = await pdfjsLib.getDocument({ data }).promise;
   const textParts: string[] = [];
 
   for (let i = 1; i <= doc.numPages; i++) {

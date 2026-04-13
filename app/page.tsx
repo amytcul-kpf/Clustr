@@ -10,6 +10,7 @@ import {
   WordFrequency,
   getCategoryColor,
 } from "@/lib/types";
+import { extractTextFromPdf } from "@/lib/pdf";
 import PdfDropzone from "@/components/PdfDropzone";
 import ProcessingStatus from "@/components/ProcessingStatus";
 import GraphView from "@/components/GraphView";
@@ -31,28 +32,12 @@ export default function Home() {
     setAppState("extracting");
 
     try {
-      // Step 1: Extract text from PDFs
-      const formData = new FormData();
-      files.forEach((file) => formData.append("files", file));
-
-      const extractRes = await fetch("/api/extract", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!extractRes.ok) {
-        const text = await extractRes.text();
-        try {
-          const err = JSON.parse(text);
-          throw new Error(err.error || "PDF extraction failed");
-        } catch {
-          throw new Error(`PDF extraction failed (status ${extractRes.status})`);
-        }
+      // Step 1: Extract text from PDFs (client-side)
+      const documents: PdfDocument[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const text = await extractTextFromPdf(files[i]);
+        documents.push({ name: files[i].name, text, index: i });
       }
-
-      const { documents } = (await extractRes.json()) as {
-        documents: PdfDocument[];
-      };
 
       // Step 2: Synthesize with Claude
       setAppState("synthesizing");
