@@ -50,12 +50,14 @@ export default function Home() {
 
       if (!synthRes.ok) {
         const text = await synthRes.text();
+        let errorMsg = `Synthesis failed (status ${synthRes.status})`;
         try {
           const err = JSON.parse(text);
-          throw new Error(err.error || "Synthesis failed");
+          if (err.error) errorMsg = err.error;
         } catch {
-          throw new Error(`Synthesis failed (status ${synthRes.status})`);
+          // Response wasn't JSON
         }
+        throw new Error(errorMsg);
       }
 
       const result = (await synthRes.json()) as SynthesisResult;

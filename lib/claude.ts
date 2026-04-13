@@ -1,11 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { SynthesisResult, PdfDocument } from "./types";
 
-const client = new Anthropic();
-
 export async function synthesizePdfs(
   documents: PdfDocument[]
 ): Promise<SynthesisResult> {
+  const client = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
   const pdfSummaries = documents
     .map(
       (doc, i) =>
